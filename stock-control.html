@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Stock - Transformadores</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .login-form {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .login-form h2 {
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+            box-shadow: 0 10px 20px rgba(245, 101, 101, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            box-shadow: 0 10px 20px rgba(66, 153, 225, 0.3);
+        }
+
+        .navigation {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .tech-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .tech-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .tech-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .tech-card p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .stock-overview {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stock-overview h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .stock-overview p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table tr:hover {
+            background-color: #f7fafc;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background-color: #c6f6d5;
+            border: 1px solid #9ae6b4;
+            color: #22543d;
+        }
+
+        .alert-danger {
+            background-color: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #742a2a;
+        }
+
+        select.form-control {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px 12px;
+            padding-right: 40px;
+            appearance: none;
+        }
+
+        @media (max-width: 768px) {
+            .navigation {
+                flex-direction: column;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen">
+            <div class="header">
+                <h1>🔧 Control de Stock</h1>
+            </div>
+            <div class="login-form">
+                <h2>Iniciar Sesión</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Usuario:</label>
+                        <input type="text" id="username" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Contraseña:</label>
+                        <input type="password" id="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Ingresar</button>
+                </form>
+                <div id="loginError" class="alert alert-danger hidden" style="margin-top: 20px;">
+                    Usuario o contraseña incorrectos
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Application -->
+        <div id="mainApp" class="hidden">
+            <div class="header">
+                <h1>🔧 Control de Stock</h1>
+                <button onclick="logout()" class="btn btn-danger" style="margin-top: 15px;">Cerrar Sesión</button>
+            </div>
+
+            <!-- Navigation -->
+            <div class="navigation">
+                <button onclick="showSection('dashboard')" class="btn btn-primary">Dashboard</button>
+                <button onclick="showSection('products')" class="btn btn-secondary">Productos</button>
+                <button onclick="showSection('technicians')" class="btn btn-info">Técnicos</button>
+                <button onclick="showSection('deliveries')" class="btn btn-secondary">Entregas</button>
+                <button onclick="showSection('dataBackup')" class="btn btn-danger">Respaldo de Datos</button>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="section">
+                <div class="card">
+                    <h2>👥 Técnicos</h2>
+                    <div id="techniciansGrid" class="grid"></div>
+                </div>
+            </div>
+
+            <!-- Products Section -->
+            <div id="productsSection" class="section hidden">
+                <div class="card">
+                    <h2>📦 Gestión de Productos</h2>
+                    <button onclick="openAddProductModal()" class="btn btn-secondary">Agregar Ingreso de Stock</button>
+                    
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Stock Actual</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Technicians Section -->
+            <div id="techniciansSection" class="section hidden">
+                <div class="card">
+                    <h2>👥 Gestión de Técnicos</h2>
+                    <button onclick="openAddTechnicianModal()" class="btn btn-info">Agregar Técnico</button>
+                    
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Productos Entregados</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="techniciansTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Deliveries Section -->
+            <div id="deliveriesSection" class="section hidden">
+                <div class="card">
+                    <h2>🚚 Realizar Entrega</h2>
+                    <form id="deliveryForm">
+                        <div class="form-group">
+                            <label for="deliveryTechnician">Técnico:</label>
+                            <select id="deliveryTechnician" class="form-control" required></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="deliveryProduct">Producto:</label>
+                            <select id="deliveryProduct" class="form-control" required></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="deliveryQuantity">Cantidad:</label>
+                            <input type="number" id="deliveryQuantity" class="form-control" min="1" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="deliveryReason">Motivo:</label>
+                            <select id="deliveryReason" class="form-control" required>
+                                <option value="">Seleccionar motivo</option>
+                                <option value="Alta nueva">Alta nueva</option>
+                                <option value="Cambio de transformador">Cambio de transformador</option>
+                                <option value="Stock del técnico">Stock del técnico</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="deliveryComment">Comentario:</label>
+                            <textarea id="deliveryComment" class="form-control" rows="3" placeholder="Detalles adicionales..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Registrar Entrega</button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <h2>📋 Historial de Entregas</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Técnico</th>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Motivo</th>
+                                <th>Comentario</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deliveriesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Technician Detail Section -->
+            <div id="technicianDetailSection" class="section hidden">
+                <div class="card">
+                    <button onclick="showSection('dashboard')" class="btn btn-secondary" style="margin-bottom: 20px;">← Volver</button>
+                    <h2 id="technicianDetailName">Detalle del Técnico</h2>
+                    
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Motivo</th>
+                                <th>Comentario</th>
+                            </tr>
+                        </thead>
+                        <tbody id="technicianDetailTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Data Backup Section -->
+            <div id="dataBackupSection" class="section hidden">
+                <div class="card">
+                    <h2>💾 Gestión de Datos</h2>
+                    <p style="margin-bottom:20px;">Utilice estas opciones para mantener sus datos de forma permanente y segura.</p>
+                    
+                    <div class="form-group">
+                        <button onclick="exportDatabase()" class="btn btn-primary" style="width: 100%; margin-bottom: 15px;">
+                            💾 Exportar Base de Datos
+                        </button>
+                        <small style="display:block; margin-bottom: 20px; color: #666;">
+                            Guarda todos los datos en un archivo que puedes almacenar de forma segura en tu computadora.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button onclick="importDatabase()" class="btn btn-secondary" style="width: 100%; margin-bottom: 15px;">
+                            📂 Importar Base de Datos
+                        </button>
+                        <small style="display:block; margin-bottom: 20px; color: #666;">
+                            Restaura los datos desde un archivo previamente exportado.
+                        </small>
+                    </div>
+
+                    <hr style="margin: 30px 0; border-color: #e2e8f0;">
+                    
+                    <h3 style="margin-bottom: 15px;">Programar respaldos automáticos</h3>
+                    <div class="form-group">
+                        <label for="backupInterval">Intervalo de respaldo automático:</label>
+                        <select id="backupInterval" class="form-control" onchange="setAutoBackupInterval()">
+                            <option value="0">Desactivado</option>
+                            <option value="15">Cada 15 minutos</option>
+                            <option value="30" selected>Cada 30 minutos</option>
+                            <option value="60">Cada hora</option>
+                            <option value="360">Cada 6 horas</option>
+                        </select>
+                    </div>
+
+                    <div id="lastBackupInfo" style="margin-top: 20px; padding: 15px; background-color: #f8fafc; border-radius: 8px;">
+                        <p>Último respaldo: <span id="lastBackupTime">Nunca</span></p>
+                        <p>Próximo respaldo: <span id="nextBackupTime">No programado</span></p>
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <h3 style="margin-bottom: 15px;">Respaldos disponibles</h3>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha y hora</th>
+                                    <th>Tamaño</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="backupsList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <!-- Add Product Modal -->
+        <div id="addProductModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('addProductModal')">&times;</span>
+                <h2>Agregar Ingreso de Stock</h2>
+                <form id="addProductForm">
+                    <div class="form-group">
+                        <label for="productName">Nombre del Producto:</label>
+                        <input type="text" id="productName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productQuantity">Cantidad:</label>
+                        <input type="number" id="productQuantity" class="form-control" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Agregar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Technician Modal -->
+        <div id="addTechnicianModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('addTechnicianModal')">&times;</span>
+                <h2>Agregar Técnico</h2>
+                <form id="addTechnicianForm">
+                    <div class="form-group">
+                        <label for="technicianName">Nombre del Técnico:</label>
+                        <input type="text" id="technicianName" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Agregar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Product Modal -->
+        <div id="editProductModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('editProductModal')">&times;</span>
+                <h2>Editar Producto</h2>
+                <form id="editProductForm">
+                    <input type="hidden" id="editProductId">
+                    <input type="hidden" id="editEntryId">
+                    <div class="form-group">
+                        <label for="editProductName">Nombre del Producto:</label>
+                        <input type="text" id="editProductName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductQuantity">Cantidad:</label>
+                        <input type="number" id="editProductQuantity" class="form-control" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Technician Modal -->
+        <div id="editTechnicianModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('editTechnicianModal')">&times;</span>
+                <h2>Editar Técnico</h2>
+                <form id="editTechnicianForm">
+                    <input type="hidden" id="editTechnicianId">
+                    <div class="form-group">
+                        <label for="editTechnicianName">Nombre del Técnico:</label>
+                        <input type="text" id="editTechnicianName" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Delivery Modal -->
+        <div id="editDeliveryModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('editDeliveryModal')">&times;</span>
+                <h2>Editar Entrega</h2>
+                <form id="editDeliveryForm">
+                    <input type="hidden" id="editDeliveryId">
+                    <div class="form-group">
+                        <label for="editDeliveryTechnician">Técnico:</label>
+                        <select id="editDeliveryTechnician" class="form-control" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDeliveryProduct">Producto:</label>
+                        <select id="editDeliveryProduct" class="form-control" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDeliveryQuantity">Cantidad:</label>
+                        <input type="number" id="editDeliveryQuantity" class="form-control" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDeliveryReason">Motivo:</label>
+                        <select id="editDeliveryReason" class="form-control" required>
+                            <option value="">Seleccionar motivo</option>
+                            <option value="Alta nueva">Alta nueva</option>
+                            <option value="Cambio de transformador">Cambio de transformador</option>
+                            <option value="Stock del técnico">Stock del técnico</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDeliveryComment">Comentario:</label>
+                        <textarea id="editDeliveryComment" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database initialization
+        let db;
+        let SQL;
+        
+        // Initialize SQL.js
+        async function initDB() {
+            const sqlPromise = initSqlJs({
+                locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+            });
+            SQL = await sqlPromise;
+            
+            // Check if database exists in localStorage
+            const savedDB = localStorage.getItem('stockDB');
+            if (savedDB) {
+                const uInt8Array = new Uint8Array(JSON.parse(savedDB));
+                db = new SQL.Database(uInt8Array);
+            } else {
+                db = new SQL.Database();
+                createTables();
+            }
+        }
+
+        // Create database tables
+        function createTables() {
+            db.run(`
+                CREATE TABLE IF NOT EXISTS products (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    stock INTEGER NOT NULL DEFAULT 0,
+                    created_date TEXT NOT NULL
+                );
+            `);
+
+            db.run(`
+                CREATE TABLE IF NOT EXISTS technicians (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    created_date TEXT NOT NULL
+                );
+            `);
+
+            db.run(`
+                CREATE TABLE IF NOT EXISTS stock_entries (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    product_id INTEGER,
+                    quantity INTEGER NOT NULL,
+                    entry_date TEXT NOT NULL,
+                    FOREIGN KEY (product_id) REFERENCES products (id)
+                );
+            `);
+
+            db.run(`
+                CREATE TABLE IF NOT EXISTS deliveries (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    technician_id INTEGER,
+                    product_id INTEGER,
+                    quantity INTEGER NOT NULL,
+                    reason TEXT NOT NULL,
+                    comment TEXT,
+                    delivery_date TEXT NOT NULL,
+                    FOREIGN KEY (technician_id) REFERENCES technicians (id),
+                    FOREIGN KEY (product_id) REFERENCES products (id)
+                );
+            `);
+
+            saveDB();
+        }
+
+        // Save database to localStorage
+        function saveDB() {
+            const data = db.export();
+            const buffer = JSON.stringify(Array.from(data));
+            localStorage.setItem('stockDB', buffer);
+        }
+
+        // Authentication
+        function login(username, password) {
+            // Simple authentication - in a real app, use proper authentication
+            return username === 'admin' && password === 'admin123';
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initDB();
+            
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                if (login(username, password)) {
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('mainApp').classList.remove('hidden');
+                    loadDashboard();
+                } else {
+                    document.getElementById('loginError').classList.remove('hidden');
+                }
+            });
+
+            document.getElementById('addProductForm').addEventListener('submit', addProduct);
+            document.getElementById('addTechnicianForm').addEventListener('submit', addTechnician);
+            document.getElementById('deliveryForm').addEventListener('submit', addDelivery);
+            
+            // Registrar los event listeners para los formularios de edición
+            document.getElementById('editProductForm').addEventListener('submit', editProduct);
+            document.getElementById('editTechnicianForm').addEventListener('submit', editTechnician);
+            document.getElementById('editDeliveryForm').addEventListener('submit', editDelivery);
+        });
+
+        function logout() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function showSection(sectionName) {
+            const sections = ['dashboard', 'products', 'technicians', 'deliveries', 'technicianDetail', 'dataBackup'];
+            sections.forEach(section => {
+                document.getElementById(section + 'Section').classList.add('hidden');
+            });
+            
+            document.getElementById(sectionName + 'Section').classList.remove('hidden');
+            
+            switch(sectionName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'products':
+                    loadProducts();
+                    break;
+                case 'technicians':
+                    loadTechnicians();
+                    break;
+                case 'deliveries':
+                    loadDeliveries();
+                    loadDeliveryOptions();
+                    break;
+                case 'dataBackup':
+                    loadBackupsList();
+                    break;
+            }
+        }
+
+        function loadDashboard() {
+            loadTechniciansGrid();
+        }
+
+        function loadTechniciansGrid() {
+            const stmt = db.prepare(`
+                SELECT t.id, t.name, 
+                       COALESCE(SUM(d.quantity), 0) as total_delivered
+                FROM technicians t
+                LEFT JOIN deliveries d ON t.id = d.technician_id
+                GROUP BY t.id, t.name
+                ORDER BY t.name
+            `);
+            
+            const technicians = [];
+            while (stmt.step()) {
+                technicians.push(stmt.getAsObject());
+            }
+            stmt.free();
+
+            const grid = document.getElementById('techniciansGrid');
+            grid.innerHTML = '';
+
+            technicians.forEach(tech => {
+                const card = document.createElement('div');
+                card.className = 'tech-card';
+                card.onclick = () => showTechnicianDetail(tech.id, tech.name);
+                card.innerHTML = `
+                    <h3>${tech.name}</h3>
+                    <p>${tech.total_delivered} productos entregados</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function showTechnicianDetail(techId, techName) {
+            document.getElementById('technicianDetailName').textContent = `Detalle: ${techName}`;
+            
+            const stmt = db.prepare(`
+                SELECT d.delivery_date, p.name as product_name, d.quantity, d.reason, d.comment
+                FROM deliveries d
+                JOIN products p ON d.product_id = p.id
+                WHERE d.technician_id = ?
+                ORDER BY d.delivery_date DESC
+            `);
+            stmt.bind([techId]);
+
+            const deliveries = [];
+            while (stmt.step()) {
+                deliveries.push(stmt.getAsObject());
+            }
+            stmt.free();
+
+            const table = document.getElementById('technicianDetailTable');
+            table.innerHTML = '';
+
+            deliveries.forEach(delivery => {
+                const row = table.insertRow();
+                row.innerHTML = `
+                    <td>${new Date(delivery.delivery_date).toLocaleDateString()}</td>
+                    <td>${delivery.product_name}</td>
+                    <td>${delivery.quantity}</td>
+                    <td>${delivery.reason}</td>
+                    <td>${delivery.comment || '-'}</td>
+                `;
+            });
+
+            showSection('technicianDetail');
+        }
+
+        function loadProducts() {
+            // Primero, obtener todos los productos con su stock actual
+            const productsStmt = db.prepare(`
+                SELECT id, name, stock FROM products ORDER BY name
+            `);
+            
+            const products = {};
+            while (productsStmt.step()) {
+                const prod = productsStmt.getAsObject();
+                products[prod.id] = prod;
+            }
+            productsStmt.free();
+            
+            // Luego, obtener todas las entradas de stock
+            const entriesStmt = db.prepare(`
+                SELECT se.id as entry_id, se.product_id, se.quantity, se.entry_date, p.name
+                FROM stock_entries se
+                JOIN products p ON se.product_id = p.id
+                ORDER BY se.entry_date DESC
+            `);
+
+            const entries = [];
+            while (entriesStmt.step()) {
+                entries.push(entriesStmt.getAsObject());
+            }
+            entriesStmt.free();
+
+            const table = document.getElementById('productsTable');
+            table.innerHTML = '';
+
+            entries.forEach(entry => {
+                const product = products[entry.product_id];
+                const row = table.insertRow();
+                row.innerHTML = `
+                    <td>${new Date(entry.entry_date).toLocaleDateString()}</td>
+                    <td>${entry.name}</td>
+                    <td>+${entry.quantity}</td>
+                    <td>${product.stock}</td>
+                    <td>
+                        <button onclick="openEditProductModal(${entry.product_id}, '${entry.name}', ${entry.entry_id}, ${entry.quantity})" class="btn btn-info" style="padding: 8px 16px; font-size: 14px;">Editar</button>
+                        <button onclick="confirmDeleteProduct(${entry.product_id}, ${entry.entry_id}, '${entry.name}')" class="btn btn-danger" style="padding: 8px 16px; font-size: 14px;">Eliminar</button>
+                    </td>
+                `;
+            });
+        }
+
+        function loadTechnicians() {
+            const stmt = db.prepare(`
+                SELECT t.*, COALESCE(SUM(d.quantity), 0) as total_delivered
+                FROM technicians t
+                LEFT JOIN deliveries d ON t.id = d.technician_id
+                GROUP BY t.id, t.name
+                ORDER BY t.name
+            `);
+
+            const technicians = [];
+            while (stmt.step()) {
+                technicians.push(stmt.getAsObject());
+            }
+            stmt.free();
+
+            const table = document.getElementById('techniciansTable');
+            table.innerHTML = '';
+
+            technicians.forEach(tech => {
+                const row = table.insertRow();
+                row.innerHTML = `
+                    <td>${tech.name}</td>
+                    <td>${tech.total_delivered}</td>
+                    <td>
+                        <button onclick="showTechnicianDetail(${tech.id}, '${tech.name}')" class="btn btn-info" style="padding: 8px 16px; font-size: 14px;">Ver Detalle</button>
+                        <button onclick="openEditTechnicianModal(${tech.id}, '${tech.name}')" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;">Editar</button>
+                        <button onclick="confirmDeleteTechnician(${tech.id}, '${tech.name}')" class="btn btn-danger" style="padding: 8px 16px; font-size: 14px;">Eliminar</button>
+                    </td>
+                `;
+            });
+        }
+
+        function loadDeliveries() {
+            const stmt = db.prepare(`
+                SELECT d.*, t.name as technician_name, p.name as product_name
+                FROM deliveries d
+                JOIN technicians t ON d.technician_id = t.id
+                JOIN products p ON d.product_id = p.id
+                ORDER BY d.delivery_date DESC
+            `);
+
+            const deliveries = [];
+            while (stmt.step()) {
+                deliveries.push(stmt.getAsObject());
+            }
+            stmt.free();
+
+            const table = document.getElementById('deliveriesTable');
+            table.innerHTML = '';
+
+            deliveries.forEach(delivery => {
+                const row = table.insertRow();
+                row.innerHTML = `
+                    <td>${new Date(delivery.delivery_date).toLocaleDateString()}</td>
+                    <td>${delivery.technician_name}</td>
+                    <td>${delivery.product_name}</td>
+                    <td>${delivery.quantity}</td>
+                    <td>${delivery.reason}</td>
+                    <td>${delivery.comment || '-'}</td>
+                    <td>
+                        <button onclick="openEditDeliveryModal(${delivery.id}, ${delivery.technician_id}, ${delivery.product_id}, ${delivery.quantity}, '${delivery.reason}', '${delivery.comment || ''}')" class="btn btn-info" style="padding: 8px 16px; font-size: 14px;">Editar</button>
+                        <button onclick="confirmDeleteDelivery(${delivery.id}, ${delivery.product_id}, ${delivery.quantity})" class="btn btn-danger" style="padding: 8px 16px; font-size: 14px;">Eliminar</button>
+                    </td>
+                `;
+            });
+        }
+
+        function loadDeliveryOptions() {
+            // Load technicians
+            const techStmt = db.prepare("SELECT * FROM technicians ORDER BY name");
+            const techSelect = document.getElementById('deliveryTechnician');
+            techSelect.innerHTML = '<option value="">Seleccionar técnico</option>';
+            
+            while (techStmt.step()) {
+                const tech = techStmt.getAsObject();
+                const option = document.createElement('option');
+                option.value = tech.id;
+                option.textContent = tech.name;
+                techSelect.appendChild(option);
+            }
+            techStmt.free();
+
+            // Load products with stock
+            const prodStmt = db.prepare("SELECT * FROM products WHERE stock > 0 ORDER BY name");
+            const prodSelect = document.getElementById('deliveryProduct');
+            prodSelect.innerHTML = '<option value="">Seleccionar producto</option>';
+            
+            while (prodStmt.step()) {
+                const prod = prodStmt.getAsObject();
+                const option = document.createElement('option');
+                option.value = prod.id;
+                option.textContent = `${prod.name} (Stock: ${prod.stock})`;
+                prodSelect.appendChild(option);
+            }
+            prodStmt.free();
+        }
+
+        function loadBackupsList() {
+            // Esta función ya no es necesaria si no se usa la exportación de DB
+            const backupsList = document.getElementById('backupsList');
+            backupsList.innerHTML = '<tr><td colspan="3">No hay respaldos disponibles</td></tr>';
+        }
+
+        function downloadBackup(filename) {
+            // Función simplificada ya que no hay archivos para descargar
+            showAlert('Función no disponible', 'info');
+        }
+
+        function exportDatabase() {
+            // Versión simplificada que solo muestra un mensaje
+            showAlert('Los datos se guardan automáticamente en localStorage', 'info');
+        }
+
+        function importDatabase() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.db';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        // Cargar la base de datos desde el archivo
+                        const arrayBuffer = event.target.result;
+                        const uint8Array = new Uint8Array(arrayBuffer);
+                        
+                        // Reemplazar la base de datos actual
+                        db.close();
+                        db = new SQL.Database(uint8Array);
+                        
+                        // Guardar en localStorage
+                        saveDB();
+                        
+                        showAlert('Base de datos importada exitosamente', 'success');
+                        loadDashboard();
+                    } catch (error) {
+                        console.error('Error al importar la base de datos:', error);
+                        showAlert('Error al importar: archivo no válido', 'danger');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            };
+            
+            input.click();
+        }
+
+        function addProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById('productName').value;
+            const quantity = parseInt(document.getElementById('productQuantity').value);
+            const date = new Date().toISOString();
+            
+            try {
+                // Insertar en products
+                const stmt = db.prepare("INSERT INTO products (name, stock, created_date) VALUES (?, ?, ?)");
+                stmt.run([name, quantity, date]);
+                stmt.free();
+                
+                // Obtener el ID del producto recién creado
+                const productId = db.lastInsertRowid;
+                
+                // Insertar en stock_entries
+                const entryStmt = db.prepare("INSERT INTO stock_entries (product_id, quantity, entry_date) VALUES (?, ?, ?)");
+                entryStmt.run([productId, quantity, date]);
+                entryStmt.free();
+                
+                saveDB();
+                closeModal('addProductModal');
+                showAlert('Producto agregado exitosamente', 'success');
+                loadProducts();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error adding product:', error);
+                showAlert('Error al agregar producto', 'danger');
+            }
+        }
+
+        function addTechnician(e) {
+            e.preventDefault();
+            const name = document.getElementById('technicianName').value;
+            const date = new Date().toISOString();
+            
+            try {
+                const stmt = db.prepare("INSERT INTO technicians (name, created_date) VALUES (?, ?)");
+                stmt.run([name, date]);
+                stmt.free();
+                
+                saveDB();
+                closeModal('addTechnicianModal');
+                showAlert('Técnico agregado exitosamente', 'success');
+                loadTechnicians();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error adding technician:', error);
+                if (error.message.includes('UNIQUE constraint failed')) {
+                    showAlert('Ya existe un técnico con ese nombre', 'danger');
+                } else {
+                    showAlert('Error al agregar técnico', 'danger');
+                }
+            }
+        }
+
+        function addDelivery(e) {
+            e.preventDefault();
+            const technicianId = document.getElementById('deliveryTechnician').value;
+            const productId = document.getElementById('deliveryProduct').value;
+            const quantity = parseInt(document.getElementById('deliveryQuantity').value);
+            const reason = document.getElementById('deliveryReason').value;
+            const comment = document.getElementById('deliveryComment').value;
+            const date = new Date().toISOString();
+            
+            try {
+                // Update product stock
+                const updateStmt = db.prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+                updateStmt.run([quantity, productId]);
+                updateStmt.free();
+
+                // Add delivery record
+                const deliveryStmt = db.prepare(`
+                    INSERT INTO deliveries (technician_id, product_id, quantity, reason, comment, delivery_date) 
+                    VALUES (?, ?, ?, ?, ?, ?)
+                `);
+                deliveryStmt.run([technicianId, productId, quantity, reason, comment, date]);
+                deliveryStmt.free();
+
+                saveDB();
+                document.getElementById('deliveryForm').reset();
+                showAlert('Entrega registrada exitosamente', 'success');
+                loadDeliveries();
+                loadDeliveryOptions();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error adding delivery:', error);
+                showAlert('Error al registrar entrega', 'danger');
+            }
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // Add CSS animations for alerts
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Funciones para abrir modales de edición
+        function openEditProductModal(productId, productName, entryId, quantity) {
+            document.getElementById('editProductId').value = productId;
+            document.getElementById('editEntryId').value = entryId;
+            document.getElementById('editProductName').value = productName;
+            document.getElementById('editProductQuantity').value = quantity;
+            document.getElementById('editProductModal').style.display = 'block';
+        }
+
+        function openEditTechnicianModal(techId, techName) {
+            document.getElementById('editTechnicianId').value = techId;
+            document.getElementById('editTechnicianName').value = techName;
+            document.getElementById('editTechnicianModal').style.display = 'block';
+        }
+
+        function openEditDeliveryModal(deliveryId, techId, productId, quantity, reason, comment) {
+            document.getElementById('editDeliveryId').value = deliveryId;
+            
+            // Cargar técnicos
+            const techSelect = document.getElementById('editDeliveryTechnician');
+            techSelect.innerHTML = '';
+            const techStmt = db.prepare("SELECT * FROM technicians ORDER BY name");
+            while (techStmt.step()) {
+                const tech = techStmt.getAsObject();
+                const option = document.createElement('option');
+                option.value = tech.id;
+                option.textContent = tech.name;
+                if (tech.id === techId) option.selected = true;
+                techSelect.appendChild(option);
+            }
+            techStmt.free();
+            
+            // Cargar productos
+            const prodSelect = document.getElementById('editDeliveryProduct');
+            prodSelect.innerHTML = '';
+            const prodStmt = db.prepare("SELECT * FROM products ORDER BY name");
+            while (prodStmt.step()) {
+                const prod = prodStmt.getAsObject();
+                const option = document.createElement('option');
+                option.value = prod.id;
+                option.textContent = prod.name;
+                if (prod.id === productId) option.selected = true;
+                prodSelect.appendChild(option);
+            }
+            prodStmt.free();
+            
+            document.getElementById('editDeliveryQuantity').value = quantity;
+            
+            const reasonSelect = document.getElementById('editDeliveryReason');
+            for(let i = 0; i < reasonSelect.options.length; i++) {
+                if(reasonSelect.options[i].value === reason) {
+                    reasonSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            
+            document.getElementById('editDeliveryComment').value = comment;
+            document.getElementById('editDeliveryModal').style.display = 'block';
+        }
+
+        // Funciones para editar registros
+        function editProduct(e) {
+            e.preventDefault();
+            const productId = document.getElementById('editProductId').value;
+            const entryId = document.getElementById('editEntryId').value;
+            const name = document.getElementById('editProductName').value;
+            const newQuantity = parseInt(document.getElementById('editProductQuantity').value);
+            
+            try {
+                // Obtener la cantidad anterior
+                const oldQuantityStmt = db.prepare("SELECT quantity FROM stock_entries WHERE id = ?");
+                oldQuantityStmt.bind([entryId]);
+                oldQuantityStmt.step();
+                const oldQuantity = oldQuantityStmt.get()[0];
+                oldQuantityStmt.free();
+                
+                // Actualizar el nombre del producto
+                const updateNameStmt = db.prepare("UPDATE products SET name = ? WHERE id = ?");
+                updateNameStmt.run([name, productId]);
+                updateNameStmt.free();
+                
+                // Actualizar la cantidad en stock_entries
+                const updateEntryStmt = db.prepare("UPDATE stock_entries SET quantity = ? WHERE id = ?");
+                updateEntryStmt.run([newQuantity, entryId]);
+                updateEntryStmt.free();
+                
+                // Establecer directamente el stock al valor de newQuantity en lugar de sumar una diferencia
+                const updateStockStmt = db.prepare("UPDATE products SET stock = ? WHERE id = ?");
+                updateStockStmt.run([newQuantity, productId]);
+                updateStockStmt.free();
+                
+                saveDB();
+                closeModal('editProductModal');
+                showAlert('Producto actualizado exitosamente', 'success');
+                loadProducts();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error updating product:', error);
+                showAlert('Error al actualizar el producto', 'danger');
+            }
+        }
+
+        function editTechnician(e) {
+            e.preventDefault();
+            const techId = document.getElementById('editTechnicianId').value;
+            const name = document.getElementById('editTechnicianName').value;
+            
+            try {
+                const stmt = db.prepare("UPDATE technicians SET name = ? WHERE id = ?");
+                stmt.run([name, techId]);
+                stmt.free();
+                
+                saveDB();
+                closeModal('editTechnicianModal');
+                showAlert('Técnico actualizado exitosamente', 'success');
+                loadTechnicians();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error updating technician:', error);
+                if (error.message.includes('UNIQUE constraint failed')) {
+                    showAlert('Ya existe un técnico con ese nombre', 'danger');
+                } else {
+                    showAlert('Error al actualizar el técnico', 'danger');
+                }
+            }
+        }
+
+        function editDelivery(e) {
+            e.preventDefault();
+            const deliveryId = document.getElementById('editDeliveryId').value;
+            const technicianId = document.getElementById('editDeliveryTechnician').value;
+            const productId = document.getElementById('editDeliveryProduct').value;
+            const newQuantity = parseInt(document.getElementById('editDeliveryQuantity').value);
+            const reason = document.getElementById('editDeliveryReason').value;
+            const comment = document.getElementById('editDeliveryComment').value;
+            
+            try {
+                // Obtener la entrega original para comparar
+                const origStmt = db.prepare(`
+                    SELECT product_id, quantity 
+                    FROM deliveries 
+                    WHERE id = ?
+                `);
+                origStmt.bind([deliveryId]);
+                origStmt.step();
+                const original = origStmt.getAsObject();
+                origStmt.free();
+                
+                // Si el producto cambió o la cantidad cambió, actualizar los stocks
+                if (original.product_id != productId || original.quantity != newQuantity) {
+                    // Devolver el stock del producto original
+                    const returnStockStmt = db.prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+                    returnStockStmt.run([original.quantity, original.product_id]);
+                    returnStockStmt.free();
+                    
+                    // Restar del nuevo producto
+                    const checkStockStmt = db.prepare("SELECT stock FROM products WHERE id = ?");
+                    checkStockStmt.bind([productId]);
+                    checkStockStmt.step();
+                    const currentStock = checkStockStmt.get()[0];
+                    checkStockStmt.free();
+                    
+                    // Verificar si hay suficiente stock
+                    if (currentStock < newQuantity) {
+                        showAlert('No hay suficiente stock disponible', 'danger');
+                        return;
+                    }
+                    
+                    const updateStockStmt = db.prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+                    updateStockStmt.run([newQuantity, productId]);
+                    updateStockStmt.free();
+                }
+                
+                // Actualizar la entrega
+                const updateStmt = db.prepare(`
+                    UPDATE deliveries 
+                    SET technician_id = ?, product_id = ?, quantity = ?, reason = ?, comment = ?
+                    WHERE id = ?
+                `);
+                updateStmt.run([technicianId, productId, newQuantity, reason, comment, deliveryId]);
+                updateStmt.free();
+                
+                saveDB();
+                closeModal('editDeliveryModal');
+                showAlert('Entrega actualizada exitosamente', 'success');
+                loadDeliveries();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error updating delivery:', error);
+                showAlert('Error al actualizar la entrega', 'danger');
+            }
+        }
+
+        // Agregar estas funciones al final del archivo, antes del cierre de la etiqueta script
+
+        // Funciones para confirmar y eliminar productos
+        function confirmDeleteProduct(productId, entryId, productName) {
+            if (confirm(`¿Está seguro que desea eliminar el producto "${productName}"?`)) {
+                deleteProduct(productId, entryId);
+            }
+        }
+
+        function deleteProduct(productId, entryId) {
+            try {
+                // Eliminar la entrada de stock
+                const deleteEntryStmt = db.prepare("DELETE FROM stock_entries WHERE id = ?");
+                deleteEntryStmt.run([entryId]);
+                deleteEntryStmt.free();
+                
+                // Eliminar el producto (opcional: solo si no tiene más entradas o entregas)
+                const checkEntriesStmt = db.prepare("SELECT COUNT(*) FROM stock_entries WHERE product_id = ?");
+                checkEntriesStmt.bind([productId]);
+                checkEntriesStmt.step();
+                const remainingEntries = checkEntriesStmt.get()[0];
+                checkEntriesStmt.free();
+                
+                const checkDeliveriesStmt = db.prepare("SELECT COUNT(*) FROM deliveries WHERE product_id = ?");
+                checkDeliveriesStmt.bind([productId]);
+                checkDeliveriesStmt.step();
+                const hasDeliveries = checkDeliveriesStmt.get()[0] > 0;
+                checkDeliveriesStmt.free();
+                
+                if (remainingEntries === 0 && !hasDeliveries) {
+                    const deleteProductStmt = db.prepare("DELETE FROM products WHERE id = ?");
+                    deleteProductStmt.run([productId]);
+                    deleteProductStmt.free();
+                } else {
+                    // Actualizar el stock del producto basado en las entradas restantes
+                    const updateStockStmt = db.prepare(`
+                        UPDATE products SET stock = 
+                        (SELECT COALESCE(SUM(quantity), 0) FROM stock_entries WHERE product_id = ?) 
+                        WHERE id = ?`
+                    );
+                    updateStockStmt.run([productId, productId]);
+                    updateStockStmt.free();
+                }
+                
+                saveDB();
+                showAlert('Producto eliminado exitosamente', 'success');
+                loadProducts();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error al eliminar producto:', error);
+                showAlert('Error al eliminar el producto', 'danger');
+            }
+        }
+
+        // Funciones para confirmar y eliminar técnicos
+        function confirmDeleteTechnician(techId, techName) {
+            if (confirm(`¿Está seguro que desea eliminar al técnico "${techName}"?`)) {
+                deleteTechnician(techId);
+            }
+        }
+
+        function deleteTechnician(techId) {
+            try {
+                // Verificar si el técnico tiene entregas asociadas
+                const checkStmt = db.prepare("SELECT COUNT(*) FROM deliveries WHERE technician_id = ?");
+                checkStmt.bind([techId]);
+                checkStmt.step();
+                const hasDeliveries = checkStmt.get()[0] > 0;
+                checkStmt.free();
+                
+                if (hasDeliveries) {
+                    showAlert('No se puede eliminar el técnico porque tiene entregas asociadas', 'danger');
+                    return;
+                }
+                
+                // Eliminar el técnico
+                const deleteStmt = db.prepare("DELETE FROM technicians WHERE id = ?");
+                deleteStmt.run([techId]);
+                deleteStmt.free();
+                
+                saveDB();
+                showAlert('Técnico eliminado exitosamente', 'success');
+                loadTechnicians();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error al eliminar técnico:', error);
+                showAlert('Error al eliminar el técnico', 'danger');
+            }
+        }
+
+        // Funciones para confirmar y eliminar entregas
+        function confirmDeleteDelivery(deliveryId, productId, quantity) {
+            if (confirm('¿Está seguro que desea eliminar esta entrega?')) {
+                deleteDelivery(deliveryId, productId, quantity);
+            }
+        }
+
+        function deleteDelivery(deliveryId, productId, quantity) {
+            try {
+                // Devolver el stock al producto
+                const updateStockStmt = db.prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+                updateStockStmt.run([quantity, productId]);
+                updateStockStmt.free();
+                
+                // Eliminar la entrega
+                const deleteStmt = db.prepare("DELETE FROM deliveries WHERE id = ?");
+                deleteStmt.run([deliveryId]);
+                deleteStmt.free();
+                
+                saveDB();
+                showAlert('Entrega eliminada exitosamente', 'success');
+                loadDeliveries();
+                loadDeliveryOptions();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error al eliminar entrega:', error);
+                showAlert('Error al eliminar la entrega', 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

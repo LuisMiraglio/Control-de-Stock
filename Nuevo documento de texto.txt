@@ -1,0 +1,3 @@
+cd control-stock
+npm start
+npm run dev
