@@ -1,4 +1,4 @@
-# Sistema de Control de Stock para Productos.
+# Sistema de Control de Stock para Productos
 
 ![Estado del Proyecto](https://img.shields.io/badge/estado-activo-brightgreen)
 ![Versión](https://img.shields.io/badge/version-1.0.0-blue)
@@ -6,7 +6,7 @@
 
 ## 📋 Descripción
 
-Sistema web completo para la gestión y control del inventario de transformadores, enfocado en el seguimiento de productos, control de entregas a técnicos y generación de reportes. La aplicación permite administrar el stock de forma eficiente, realizar seguimiento de los productos entregados y visualizar estadísticas por técnico.
+Sistema web completo para la gestión y control del inventario de productos, enfocado en el seguimiento de productos, control de entregas a técnicos y generación de reportes. La aplicación permite administrar el stock de forma eficiente, realizar seguimiento de los productos entregados y visualizar estadísticas por técnico.
 
 ## ✨ Características
 
@@ -176,7 +176,7 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 
 ## 👨‍💻 Autor
 
-Desarrollado por [Tu Nombre]
+Desarrollado por [Luis Miraglio]
 
 ---
 
